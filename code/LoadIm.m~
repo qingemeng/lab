@@ -1,0 +1,21 @@
+function [im, ii_im] = LoadIm(im_fname)
+
+addpath('imDir');
+imDir = 'imDir/';
+im = double(imread(strcat(imDir, im_fname)));
+%disp(im);
+% normalization
+[xn,mu,s] = NormalizeData(im(:));
+im(:) = xn;
+%disp(im);
+end
+
+
+
+function [xn,mu,s] = NormalizeData(x)
+
+mu = mean(x);
+s = std (x);
+xn =(x-mu)/s;
+
+end
