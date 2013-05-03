@@ -1,7 +1,7 @@
 function [im, ii_im] = LoadIm(im_fname)
 
-addpath('imDir');
-imDir = 'imDir/';
+addpath('TrainingImages');
+imDir = 'TrainingImages/FACES/';
 im = double(imread(strcat(imDir, im_fname)));
 
 % normalization
@@ -13,10 +13,10 @@ ii_im = cumsum(cumsum(double(im)),2);
 
 % output integral image
 
-imagesc(ii_im);
-colormap(gray);
-axis equal
-axis off
+%imagesc(ii_im);
+%colormap(gray);
+%axis equal
+%axis off
 end
 
 
