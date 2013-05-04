@@ -1,8 +1,11 @@
 function [im, ii_im] = LoadIm(im_fname)
 
-addpath('TrainingImages');
-imDir = 'TrainingImages/FACES/';
-im = double(imread(strcat(imDir, im_fname)));
+%addpath('TrainingImages');
+%imDir = 'TrainingImages/FACES/';
+
+%disp(im_fname);
+
+im = double(imread(im_fname));
 
 % normalization
 xn = NormalizeData(im(:));
