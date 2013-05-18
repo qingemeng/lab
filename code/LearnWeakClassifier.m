@@ -12,6 +12,7 @@ function [theta, p, err] = LearnWeakClassifier(ws, fs, ys)
 % For dot product we got some NaN values in the vectors and the total
 % result returned NaN, so we tried this approach
 ws      = ws';
+fs(isnan(fs))=0; %replace NaN with 0
 meanPos = (ws * (fs .*ys))/(ws * ys);
 meanNeg = (ws* (fs .*(1-ys)))/(ws * (1-ys));
 

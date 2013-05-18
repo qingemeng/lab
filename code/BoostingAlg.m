@@ -15,8 +15,14 @@ function Cparams = BoostingAlg(Fdata, NFdata, FTdata, T)
 % Compute feature responses for all images for every feature type
 ni = size(Fdata.ii_ims,1);% number of positive examples
 m = size(NFdata.ii_ims,1);% number of negative examples
+
 yfs = Fdata.ii_ims * FTdata.fmat;% (ni x k) k: number of features
 nfs = NFdata.ii_ims * FTdata.fmat;% (m x k) k: number of features
+
+%test data: using the first 1000 features defined in FTdata.fmat 
+% yfs = Fdata.ii_ims * FTdata.fmat(:,1:1000);
+% nfs = NFdata.ii_ims * FTdata.fmat(:,1:1000);
+
 fs = [yfs;nfs];% (n x k) k: number of features
 n = size(fs,1);% This line can be ommitted
 
@@ -52,7 +58,7 @@ for t = 1:T
             fs(:,i), ys);
     end
     
-    [error I]   = min(err);
+    [error, I]   = min(err);
     Thetas(t,:) = [I, theta(I), p(I)];
     fmat        = [fmat FTdata.fmat(:,I)];
     all_ftypes  = [all_ftypes; FTdata.all_ftypes(I,:)];

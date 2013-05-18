@@ -1,0 +1,236 @@
+function sanityCheck
+% Program2SC;
+% Program9SC;
+% Program10SC;
+% Program12SC;
+% Program16SC;
+% Program17SC;
+% Program18SC;
+% Program19SC;
+% Program19SC10;
+
+%% task3
+Program20SC;
+end
+
+%% Sanity check for program 2.
+
+function Program2SC
+clear
+% eg:x = 3, y = 5, w = h = 10
+x = 3;
+y = 5;
+w = 5;
+h = 5;
+[im,ii_im] = LoadIm('TrainingImages/FACES/face00001.bmp');
+a = ComputeBoxSum(ii_im, x,y,w,h);
+assert(sum(abs(a- sum(sum(im(y:y+h-1, x:x+w-1))))) < 1e-6,'P2 check fail'); 
+fprintf('\nProgram2 Sanity Check passes\n');
+end
+
+%% Sanity check for program 9.
+
+function Program9SC
+clear
+
+x = 3;
+y = 5;
+w = 5;
+h = 5;
+[im,ii_im] = LoadIm('TrainingImages/FACES/face00001.bmp');
+b_vec = VecBoxSum(x, y, w, h, 19, 19);
+A1 = ii_im(:)' * b_vec;
+A2 = ComputeBoxSum(ii_im, x, y, w, h);
+
+assert(sum(abs(A1-A2))<1e-6,'P9 check fail');
+
+fprintf('\nProgram9 Sanity Check passes\n');
+
+end
+
+%% Sanity check for program 10.
+function Program10SC
+clear
+
+x = 3;
+y = 5;
+w = 5;
+h = 5;
+[im,ii_im] = LoadIm('TrainingImages/FACES/face00001.bmp');
+ftype_vec = VecFeature([1, x, y, w, h], 19, 19);
+A1 = ii_im(:)' * ftype_vec;
+A2 = FeatureTypeI(ii_im, x, y, w, h);
+
+assert(sum(abs(A1-A2))<1e-6,'P10 check fails');
+
+fprintf('\nProgram10 Sanity Check passes\n');
+
+end
+
+function Program12SC
+
+ii_ims = zeros(19,19,100);
+mystr = ['TrainingImages/FACES', '/*.bmp'];
+im_files = dir(mystr);
+addpath('TrainingImages/FACES');
+
+numPictures = length(im_files);
+len         = numPictures;
+
+
+for i = 1:100
+    [im, ii_im] = LoadIm(im_files(i).name);
+    ii_ims(:,:,i) = ii_im;    
+end
+
+dinfo3  = load('DebugInfo/debuginfo3.mat');
+ftype   = dinfo3.ftype;
+eps     = 1e-6;
+
+%% Sanity check for program 12.
+ii_ims1 = reshape(ii_ims, [361 100]);
+fs1     = VecComputeFeature(ii_ims1, VecFeature(ftype, 19, 19));
+fs2     = ComputeFeature(ii_ims, ftype);
+assert(sum(fs1 - fs2') < eps, 'P12 check fails');
+fprintf('\nProgram12 Sanity Check passes\n');
+end
+
+%% Sanity check for program 16.
+function Program16SC
+Fdata = load('FaceData.mat');
+NFdata = load('NonFaceData.mat');
+FTdata = load('FeaturesToUse.mat');
+
+fm = FTdata.fmat(:,12028);
+yfs = Fdata.ii_ims * fm;
+nfs = NFdata.ii_ims * fm;
+
+fs = [yfs;nfs];
+ni = size(Fdata.ii_ims,1);
+nj = size(NFdata.ii_ims,1);
+
+n = size(fs,1);
+
+wVal = 1/n;
+wVec = repmat(wVal,n,1);
+ws = wVec/sum(wVec); 
+
+ys = double([ones(size(yfs,1),1); zeros(size(nfs,1),1)]);
+
+[theta, p, err] = LearnWeakClassifier(ws, fs, ys);
+disp([theta,p,err]);
+
+[H,x1out] = hist(yfs);
+[NH,x2out] = hist(nfs);
+
+H = H/ni;
+NH = NH/nj;
+
+figure;
+hold on;
+plot(x1out,H, 'r');
+plot(x2out,NH);
+line(theta, [0:0.005:max(NH)],'LineStyle','-');
+
+assert(sum(theta - 3.6453') < eps, 'P16 check fails');
+assert(sum(p - 1') < eps, 'P16 check fails');
+fprintf('\nProgram16 Sanity Check passes\n');
+% % % a = 1/(2*ni);
+% % % yws = repmat(a, ni, 1);
+% % % b = 1/(2*m);
+% % % nws = repmat(b, m, 1);
+% % % ws = [yws; nws];
+% % % ys = [ones(ni,1); zeros(m,1)];
+% % % [theta,p,err] = LearnWeakClassifier(ws,fs,ys)
+end
+
+%% Sanity check for program 17.
+function Program17SC
+clear
+fpic = MakeFeaturePic([4, 5, 5, 5, 5], 19, 19);
+imagesc(fpic);
+colormap(gray);
+axis equal;
+axis on;
+end
+
+%% Sanity check for program 18.
+function Program18SC
+clear
+FTdata = load('FeaturesToUse.mat');
+cpic = MakeClassifierPic(FTdata.all_ftypes,[5192, 12765],[1.8725,1.467],...
+    [1,-1],19,19);
+colormap(gray)
+imagesc(cpic)
+axis equal;
+axis on;
+end
+
+%% Sanity check for program 19.
+function Program19SC
+clear
+Fdata = load('FaceData.mat');
+NFdata = load('NonFaceData.mat');
+FTdata = load('FeaturesToUse.mat');
+FTdata.fmat = FTdata.fmat(:,1:1000);
+
+Cparams = BoostingAlg(Fdata, NFdata, FTdata, 3);
+%save Cparams
+fpic1 = MakeFeaturePic(Cparams.all_ftypes(1,:),19,19);
+fig1 = figure;
+colormap(gray)
+imagesc(fpic1)
+fig2 = figure;
+fpic2 = MakeFeaturePic(Cparams.all_ftypes(2,:),19,19);
+colormap(gray)
+imagesc(fpic2)
+fpic3 = MakeFeaturePic(Cparams.all_ftypes(3,:),19,19);
+fig3 = figure;
+colormap(gray)
+imagesc(fpic3)
+
+cpic = MakeClassifierPic(Cparams.all_ftypes,[1 2 3], Cparams.alphas',...
+    Cparams.Thetas(:,3)',19,19);
+fig4 = figure;
+colormap(gray)
+imagesc(cpic)
+
+% subplot(1,3,1);subimage(fig1,gray);
+% subplot(1,3,2);subimage(fig2);
+% subplot(1,3,3);subimage(fig3);
+
+% T is set to be 1
+Cparams = BoostingAlg(Fdata, NFdata, FTdata, 3);
+end
+%% Sanity check for program 19 with 10 features.
+function Program19SC10
+clear
+Fdata = load('FaceData.mat');
+NFdata = load('NonFaceData.mat');
+FTdata = load('FeaturesToUse.mat');
+Cparams = BoostingAlg(Fdata, NFdata, FTdata, 10);
+save ('Cparams','Cparams');
+
+load('Cparams.mat');
+
+% Print all 10 features of Cparams
+for i = 1:10
+    fpic = MakeFeaturePic(Cparams.all_ftypes(i,:),19,19);
+    fig = figure;
+    colormap(gray)
+    imagesc(fpic)
+end
+
+% Print the final outout combining all 10 features
+cpic = MakeClassifierPic(Cparams.all_ftypes,1:10, Cparams.alphas',...
+    Cparams.Thetas(:,3)',19,19);
+fig = figure;
+colormap(gray)
+imagesc(cpic)
+end
+
+function Program20SC
+
+end
+
+

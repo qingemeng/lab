@@ -3,7 +3,7 @@ function [im, ii_im] = LoadIm(im_fname)
 %addpath('TrainingImages');
 %imDir = 'TrainingImages/FACES/';
 
-%disp(im_fname);
+% disp(im_fname);
 
 im = double(imread(im_fname));
 
